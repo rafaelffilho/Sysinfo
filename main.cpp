@@ -5,9 +5,6 @@
 /*
 	Made by: me
 	Pacman's ghost by: User
-	TODO:
-	Resolution
-	CPU cat /proc/cpuinfo | grep "model name" | awk 'getline' | awk 'getline' | cut -c 14-
 */
 
 using namespace std;
@@ -22,7 +19,7 @@ int main (int argc, char **argv) {
  	auto pac6 = "\033[1;32m  ▀   ▀  ▀   ▀";
 
 
-	int packages;
+	char packages[56];
 	int sharedMem;
 	int usedMem;
 	int totalMem;
@@ -33,12 +30,14 @@ int main (int argc, char **argv) {
 	char user[56];
 	char host[56];
 	char cpu[56];
+	char resolution[56];
 	auto blue = "\033[0m\033[1;34m";
 	auto white = "\033[0m\033[1;37m";
 
 	FILE *fp;
 	fp = popen("pacman -Qq | wc -l", "r"); // Packages
-	fscanf(fp, "%d", &packages);
+	fgets(packages, 56, fp);
+	packages[strlen(packages) - 1] = '\0';
 	fp = popen("free -m | grep Mem | awk '{print $3}'", "r"); // Used Memory
 	fscanf(fp, "%d", &usedMem);
 	fp = popen("free -m | grep Mem | awk '{print $5}'", "r"); // Shared Memory
@@ -66,7 +65,13 @@ int main (int argc, char **argv) {
 	fp = popen("cat /proc/cpuinfo | grep \"model name\" | awk 'getline' | awk 'getline' | cut -c 14-", "r"); // CPU
 	fgets(cpu, 56, fp);
 	cpu[strlen(cpu) - 1] = '\0';
+	fp = popen("xrandr| grep \" connected\" | awk '{print $3}' | rev | cut -c 5- | rev", "r"); // CPU
+	fgets(resolution, 56, fp);
+	resolution[strlen(resolution) - 1] = '\0';
 	pclose(fp);
+
+	if (strstr(os,"Arch") == NULL)
+		strcpy(packages, "Unknow (Only works in Arch)");
 
 
 	cout << blue << "\t\t" << user << white << "@" << blue << host << endl;
@@ -74,9 +79,10 @@ int main (int argc, char **argv) {
 	cout << pac1 << blue << "\tOS: " << white << os << endl;
 	cout << pac2 << blue << "\tKernel: " << white << kernel << endl;
 	cout << pac3 << blue << "\tUptime: " << white << uptime << endl;
-	cout << pac4 << blue << "\tPackages: " << white << packages << endl;
-	cout << pac5 << blue << "\tDesktop: " << white << desktop << endl;
-	cout << pac6 << blue << "\tCPU: " << white << cpu << endl;
+	cout << pac4 << blue << "\tResolution: " << white << resolution << endl;
+	cout << pac5 << blue << "\tPackages: " << white << packages << endl;
+	cout << pac6 << blue << "\tDesktop: " << white << desktop << endl;
+	cout << "\t" << blue << "\tCPU: " << white << cpu << endl;
 	cout << "\t" << blue << "\tRAM: " << white << sharedMem + usedMem << "MB / " << totalMem << "MB" << endl;
 
 	return 0;
